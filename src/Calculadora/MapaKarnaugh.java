@@ -1,119 +1,140 @@
 package Calculadora;
 
+import javax.swing.JTextArea;
+
 public class MapaKarnaugh {
 
-    // Método para generar mapa de Karnaugh y agrupar minitérminos
-    public void generarMapaKarnaugh(boolean[][] tablaVerdad, int numVariables) {
+    public void generarMapaKarnaugh(boolean[][] tablaVerdad, int numVariables, JTextArea outputArea) {
         switch (numVariables) {
             case 2:
-                generarMapa2Variables(tablaVerdad);
+                generarMapa2Variables(tablaVerdad, outputArea);
                 break;
             case 3:
-                generarMapa3Variables(tablaVerdad);
+                generarMapa3Variables(tablaVerdad, outputArea);
                 break;
             case 4:
-                generarMapa4Variables(tablaVerdad);
+                generarMapa4Variables(tablaVerdad, outputArea);
                 break;
             default:
-                System.out.println("El mapa de Karnaugh solo se puede generar para 2, 3 o 4 variables.");
+                outputArea.append("Número de variables no soportado.\n");
                 break;
         }
     }
 
-    // Método para generar y agrupar minitérminos para 4 variables
-    private void generarMapa4Variables(boolean[][] tablaVerdad) {
-        System.out.println("\nMapa de Karnaugh para 4 Variables");
+    private void generarMapa2Variables(boolean[][] tablaVerdad, JTextArea outputArea) {
+        outputArea.append("\nMapa de Karnaugh para 2 Variables\n");
+        String[] encabezados = {"0", "1"};
+        String[] filas = {"0", "1"};
+
+        outputArea.append("  ");
+        for (String col : encabezados) {
+            outputArea.append(col + " ");
+        }
+        outputArea.append("\n");
+
+        for (int i = 0; i < 2; i++) {
+            outputArea.append(filas[i] + " ");
+            for (int j = 0; j < 2; j++) {
+                int fila = i * 2 + j;
+                outputArea.append((tablaVerdad[fila][2] ? "1" : "0") + " ");
+            }
+            outputArea.append("\n");
+        }
+
+        agruparMinitermos(tablaVerdad, 2, outputArea);
+    }
+
+    private void generarMapa3Variables(boolean[][] tablaVerdad, JTextArea outputArea) {
+        outputArea.append("\nMapa de Karnaugh para 3 Variables\n");
+        String[] encabezados = {"00", "01", "11", "10"};
+        String[] filas = {"0", "1"};
+
+        outputArea.append("   ");
+        for (String col : encabezados) {
+            outputArea.append(col + " ");
+        }
+        outputArea.append("\n");
+
+        for (int i = 0; i < 2; i++) {
+            outputArea.append(filas[i] + " ");
+            for (int j = 0; j < 4; j++) {
+                int fila = i * 4 + j;
+                outputArea.append((tablaVerdad[fila][3] ? "1" : "0") + " ");
+            }
+            outputArea.append("\n");
+        }
+
+        agruparMinitermos(tablaVerdad, 3, outputArea);
+    }
+
+    private void generarMapa4Variables(boolean[][] tablaVerdad, JTextArea outputArea) {
+        outputArea.append("\nMapa de Karnaugh para 4 Variables\n");
         String[] encabezados = {"00", "01", "11", "10"};
         String[] filas = {"00", "01", "11", "10"};
 
-        System.out.print("    ");
+        outputArea.append("    ");
         for (String col : encabezados) {
-            System.out.print(col + " ");
+            outputArea.append(col + " ");
         }
-        System.out.println();
+        outputArea.append("\n");
 
         for (int i = 0; i < 4; i++) {
-            System.out.print(filas[i] + " ");
+            outputArea.append(filas[i] + " ");
             for (int j = 0; j < 4; j++) {
                 int fila = i * 4 + j;
-                System.out.print((tablaVerdad[fila][4] ? 1 : 0) + " ");
+                outputArea.append((tablaVerdad[fila][4] ? "1" : "0") + " ");
             }
-            System.out.println();
+            outputArea.append("\n");
         }
 
-        // Agrupación de minitérminos
-        agruparMinitermos(tablaVerdad);
+        agruparMinitermos(tablaVerdad, 4, outputArea);
     }
 
-    // Método para agrupar minitérminos en el mapa de Karnaugh
-    private void agruparMinitermos(boolean[][] tablaVerdad) {
-        System.out.println("\nAgrupaciones de minitérminos:");
+    private void agruparMinitermos(boolean[][] tablaVerdad, int numVariables, JTextArea outputArea) {
+        outputArea.append("\nAgrupaciones de minitérminos:\n");
 
-        boolean[][] agrupado = new boolean[16][16]; // Para verificar agrupaciones
+        boolean[][] agrupado = new boolean[16][16];
 
-        // Agrupaciones de 1
         for (int i = 0; i < tablaVerdad.length; i++) {
-            if (tablaVerdad[i][4]) {
-                System.out.println("Minitérmino " + getMinterm(i) + " está en la tabla.");
+            if (tablaVerdad[i][numVariables]) {
+                outputArea.append("Minitérmino " + getMinterm(i, numVariables) + " está en la tabla.\n");
                 agrupado[i / 4][i % 4] = true;
             }
         }
 
-        // Agrupaciones de 2
-        buscarAgrupaciones(tablaVerdad, 2, agrupado);
-
-        // Agrupaciones de 4
-        buscarAgrupaciones(tablaVerdad, 4, agrupado);
-
-        // Agrupaciones de 8
-        buscarAgrupaciones(tablaVerdad, 8, agrupado);
+        buscarAgrupaciones(tablaVerdad, 2, agrupado, numVariables, outputArea);
+        buscarAgrupaciones(tablaVerdad, 4, agrupado, numVariables, outputArea);
+        buscarAgrupaciones(tablaVerdad, 8, agrupado, numVariables, outputArea);
     }
 
-    // Buscar agrupaciones de tamaño específico
-    private void buscarAgrupaciones(boolean[][] tablaVerdad, int tamaño, boolean[][] agrupado) {
+    private void buscarAgrupaciones(boolean[][] tablaVerdad, int tamaño, boolean[][] agrupado, int numVariables, JTextArea outputArea) {
         int n = tablaVerdad.length;
         int filas = (int) Math.sqrt(n);
         int columnas = filas;
 
         for (int i = 0; i < filas; i++) {
             for (int j = 0; j < columnas; j++) {
-                if (verificarAgrupacion(tablaVerdad, tamaño, i, j, agrupado)) {
-                    System.out.println("Agrupación de tamaño " + tamaño + " encontrada en (" + i + ", " + j + ")");
+                if (verificarAgrupacion(tablaVerdad, tamaño, i, j, agrupado, numVariables)) {
+                    outputArea.append("Agrupación de tamaño " + tamaño + " encontrada en (" + i + ", " + j + ")\n");
                 }
             }
         }
     }
 
-    // Verificar si se puede formar una agrupación del tamaño deseado
-    private boolean verificarAgrupacion(boolean[][] tablaVerdad, int tamaño, int fila, int columna, boolean[][] agrupado) {
-        // Aquí puedes agregar lógica para verificar agrupaciones específicas.
-        // La lógica puede ser compleja y varía según cómo quieras agrupar los minitérminos.
-
-        // Ejemplo básico de agrupación de 2x2 (para ilustración):
+    private boolean verificarAgrupacion(boolean[][] tablaVerdad, int tamaño, int fila, int columna, boolean[][] agrupado, int numVariables) {
         if (tamaño == 4) {
-            return tablaVerdad[fila * 4 + columna][4] &&
-                    tablaVerdad[fila * 4 + (columna + 1) % 4][4] &&
-                    tablaVerdad[((fila + 1) % 4) * 4 + columna][4] &&
-                    tablaVerdad[((fila + 1) % 4) * 4 + (columna + 1) % 4][4];
+            return fila * 4 + columna < tablaVerdad.length &&
+                    tablaVerdad[fila * 4 + columna][numVariables] &&
+                    tablaVerdad[fila * 4 + (columna + 1) % 4][numVariables] &&
+                    tablaVerdad[((fila + 1) % 4) * 4 + columna][numVariables] &&
+                    tablaVerdad[((fila + 1) % 4) * 4 + (columna + 1) % 4][numVariables];
         }
 
         return false;
     }
 
-    // Convertir índice a minitérmino (ejemplo simple para ilustración)
-    private String getMinterm(int index) {
-        String binary = String.format("%4s", Integer.toBinaryString(index)).replace(' ', '0');
+    private String getMinterm(int index, int numVariables) {
+        String binary = String.format("%" + numVariables + "s", Integer.toBinaryString(index)).replace(' ', '0');
         return binary;
     }
-
-    private void generarMapa2Variables(boolean[][] tablaVerdad) {
-        // Similar implementación para 2 variables
-    }
-
-    private void generarMapa3Variables(boolean[][] tablaVerdad) {
-        // Similar implementación para 3 variables
-    }
 }
-
-
-
