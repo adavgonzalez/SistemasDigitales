@@ -2,13 +2,14 @@ package Calculadora;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.HashSet;
 
+/**
+ * Clase principal para la interfaz gráfica de la calculadora de Karnaugh.
+ */
 public class CalculadoraGUI extends JFrame {
-    private JTextArea outputArea;
-    private JTextField equationField;
-    private JComboBox<Integer> variableCountBox;
+    private final JTextArea outputArea;
+    private final JTextField equationField;
 
     public CalculadoraGUI() {
         setTitle("Calculadora de Karnaugh");
@@ -16,12 +17,12 @@ public class CalculadoraGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Create input panel
+        // Crear panel de entrada
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new GridLayout(3, 2));
 
-        inputPanel.add(new JLabel("Número de variables (2-4):"));
-        variableCountBox = new JComboBox<>(new Integer[]{2, 3, 4});
+        inputPanel.add(new JLabel("Número de variables (1-4):"));
+        JComboBox<Integer> variableCountBox = new JComboBox<>(new Integer[]{1, 2, 3, 4});
         inputPanel.add(variableCountBox);
 
         inputPanel.add(new JLabel("Ecuación booleana:"));
@@ -33,33 +34,56 @@ public class CalculadoraGUI extends JFrame {
 
         add(inputPanel, BorderLayout.NORTH);
 
-        // Create output area
+        // Crear área de salida
         outputArea = new JTextArea();
         outputArea.setEditable(false);
         add(new JScrollPane(outputArea), BorderLayout.CENTER);
 
-        // Add action listener to the button
-        calculateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                calculate();
-            }
-        });
+        // Agregar listener al botón
+        calculateButton.addActionListener(_ -> calculate());
     }
 
+    /**
+     * Método para calcular la tabla de verdad y el mapa de Karnaugh.
+     */
     private void calculate() {
-        int numVariables = (int) variableCountBox.getSelectedItem();
         String expr = equationField.getText();
+        int numVariables = contarVariablesUnicas(expr);
 
-        TablaDeVerdad tablaDeVerdad = new TablaDeVerdad();
-        MapaKarnaugh mapaKarnaugh = new MapaKarnaugh();
+        try {
+            TablaDeVerdad tablaDeVerdad = new TablaDeVerdad();
+            MapaKarnaugh mapaKarnaugh = new MapaKarnaugh();
 
-        boolean[][] tabla = tablaDeVerdad.generarTablaDeVerdad(numVariables, expr);
-        outputArea.setText(""); // Clear previous output
-        mostrarTablaDeVerdad(tabla, numVariables);
-        mapaKarnaugh.generarMapaKarnaugh(tabla, numVariables, outputArea);
+            boolean[][] tabla = tablaDeVerdad.generarTablaDeVerdad(numVariables, expr);
+            outputArea.setText(""); // Limpiar salida previa
+            mostrarTablaDeVerdad(tabla, numVariables);
+            mapaKarnaugh.generarMapaKarnaugh(tabla, numVariables, outputArea);
+        } catch (Exception e) {
+            outputArea.setText("Error: " + e.getMessage());
+            e.printStackTrace(); // Imprimir traza de error para depuración
+        }
     }
 
+    /**
+     * Método para contar el número de variables únicas en una ecuación booleana.
+     * @param ecuacion La ecuación booleana.
+     * @return El número de variables únicas.
+     */
+    private int contarVariablesUnicas(String ecuacion) {
+        HashSet<Character> variables = new HashSet<>();
+        for (char c : ecuacion.toCharArray()) {
+            if (Character.isLetter(c)) {
+                variables.add(Character.toUpperCase(c));
+            }
+        }
+        return variables.size();
+    }
+
+    /**
+     * Método para mostrar la tabla de verdad en el área de salida.
+     * @param tabla La tabla de verdad.
+     * @param numVariables El número de variables.
+     */
     private void mostrarTablaDeVerdad(boolean[][] tabla, int numVariables) {
         outputArea.append("\nTabla de Verdad:\n");
         for (int i = 0; i < numVariables; i++) {
@@ -76,11 +100,6 @@ public class CalculadoraGUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new CalculadoraGUI().setVisible(true);
-            }
-        });
+        SwingUtilities.invokeLater(() -> new CalculadoraGUI().setVisible(true));
     }
 }
