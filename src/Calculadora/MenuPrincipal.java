@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
  */
 public class MenuPrincipal extends JFrame {
 
+    private JTextArea outputArea;
+
     public MenuPrincipal() {
         setTitle("Calculadora de Mapas de Karnaugh");
         setSize(600, 400);
@@ -36,7 +38,8 @@ public class MenuPrincipal extends JFrame {
         });
         menuAyuda.add(itemInformacion);
 
-        JTextArea outputArea = new JTextArea();
+        outputArea = new JTextArea();
+        outputArea.setEditable(false); // Ensure the output area is not editable
         add(new JScrollPane(outputArea), BorderLayout.CENTER);
 
         JPanel panel = new JPanel();
@@ -63,6 +66,8 @@ public class MenuPrincipal extends JFrame {
                     String expr = fieldExpr.getText();
                     TablaDeVerdad tabla = new TablaDeVerdad();
                     boolean[][] tablaVerdad = tabla.generarTablaDeVerdad(numVariables, expr);
+                    outputArea.setText(""); // Clear previous output
+                    mostrarTablaDeVerdad(tablaVerdad, numVariables); // Display the truth table
                     MapaKarnaugh mapa = new MapaKarnaugh();
                     mapa.generarMapaKarnaugh(tablaVerdad, numVariables, outputArea);
                 } catch (NumberFormatException ex) {
@@ -71,5 +76,24 @@ public class MenuPrincipal extends JFrame {
             }
         });
         panel.add(buttonGenerar);
+    }
+
+    private void mostrarTablaDeVerdad(boolean[][] tabla, int numVariables) {
+        outputArea.append("Tabla de Verdad:\n");
+
+        // Print headers (A, B, C, ... and OUT)
+        for (int i = 0; i < numVariables; i++) {
+            outputArea.append((char)('A' + i) + " ");
+        }
+        outputArea.append("OUT\n");
+
+        // Print rows of the truth table
+        for (boolean[] fila : tabla) {
+            for (int j = 0; j < numVariables; j++) {
+                outputArea.append((fila[j] ? "1" : "0") + " ");
+            }
+            // Print the OUT result
+            outputArea.append((fila[numVariables] ? "1" : "0") + "\n");
+        }
     }
 }

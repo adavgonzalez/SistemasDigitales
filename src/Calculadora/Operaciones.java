@@ -30,6 +30,7 @@ public class Operaciones {
      * @return El resultado de la evaluación.
      */
     public boolean evaluate(String expr, boolean[] values) {
+        System.out.println("Evaluando expresión: " + expr); // Mensaje de depuración
         Stack<Boolean> operandStack = new Stack<>();
         Stack<Character> operatorStack = new Stack<>();
 
@@ -41,6 +42,7 @@ public class Operaciones {
             } else if (Character.isLetter(c)) {
                 boolean value = getValue(c, values);
                 operandStack.push(value);
+                System.out.println("Variable " + c + " = " + value); // Mensaje de depuración
             } else if (c == ')') {
                 while (operatorStack.peek() != '(') {
                     operandStack.push(applyOperator(operatorStack.pop(), operandStack));
@@ -58,7 +60,9 @@ public class Operaciones {
             operandStack.push(applyOperator(operatorStack.pop(), operandStack));
         }
 
-        return operandStack.pop();
+        boolean result = operandStack.pop();
+        System.out.println("Resultado de la evaluación: " + result); // Mensaje de depuración
+        return result;
     }
 
     private boolean getValue(char c, boolean[] values) {

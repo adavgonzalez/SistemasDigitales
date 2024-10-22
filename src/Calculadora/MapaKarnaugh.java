@@ -70,7 +70,7 @@ public class MapaKarnaugh {
         for (int i = 0; i < 2; i++) {
             outputArea.append(filas[i] + " ");
             for (int j = 0; j < 2; j++) {
-                int index = i * 2 + (j == 1 ? 2 : 1); // Swap columns 2 and 3
+                int index = i * 2 + j; // Corrected index calculation
                 outputArea.append((tablaVerdad[index][2] ? "1" : "0") + " ");
             }
             outputArea.append("\n");

@@ -2,11 +2,7 @@ package Calculadora;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashSet;
 
-/**
- * Clase principal para la interfaz gráfica de la calculadora de Karnaugh.
- */
 public class CalculadoraGUI extends JFrame {
     private final JTextArea outputArea;
     private final JTextField equationField;
@@ -17,7 +13,7 @@ public class CalculadoraGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Crear panel de entrada
+        // Create input panel
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new GridLayout(3, 2));
 
@@ -34,69 +30,58 @@ public class CalculadoraGUI extends JFrame {
 
         add(inputPanel, BorderLayout.NORTH);
 
-        // Crear área de salida
+        // Create output area
         outputArea = new JTextArea();
         outputArea.setEditable(false);
         add(new JScrollPane(outputArea), BorderLayout.CENTER);
 
-        // Agregar listener al botón
-        calculateButton.addActionListener(_ -> calculate());
+        // Add listener to the button
+        calculateButton.addActionListener(_ -> {
+            System.out.println("Botón 'Calcular' presionado"); // Debug message
+            int numVariables = (Integer) variableCountBox.getSelectedItem();
+            System.out.println("Número de variables seleccionado: " + numVariables); // Debug message
+            calculate(numVariables);
+        });
     }
 
-    /**
-     * Método para calcular la tabla de verdad y el mapa de Karnaugh.
-     */
-    private void calculate() {
+    private void calculate(int numVariables) {
         String expr = equationField.getText();
-        int numVariables = contarVariablesUnicas(expr);
 
         try {
             TablaDeVerdad tablaDeVerdad = new TablaDeVerdad();
             MapaKarnaugh mapaKarnaugh = new MapaKarnaugh();
 
             boolean[][] tabla = tablaDeVerdad.generarTablaDeVerdad(numVariables, expr);
-            outputArea.setText(""); // Limpiar salida previa
-            mostrarTablaDeVerdad(tabla, numVariables);
-            mapaKarnaugh.generarMapaKarnaugh(tabla, numVariables, outputArea);
+            outputArea.setText(""); // Clear previous output
+            System.out.println("Tabla de verdad generada"); // Debug message
+            mostrarTablaDeVerdad(tabla, numVariables); // Display the truth table
+            System.out.println("Tabla de verdad mostrada"); // Debug message
+            mapaKarnaugh.generarMapaKarnaugh(tabla, numVariables, outputArea); // Display Karnaugh map
         } catch (Exception e) {
             outputArea.setText("Error: " + e.getMessage());
-            e.printStackTrace(); // Imprimir traza de error para depuración
+            e.printStackTrace(); // Print stack trace for debugging
         }
     }
 
-    /**
-     * Método para contar el número de variables únicas en una ecuación booleana.
-     * @param ecuacion La ecuación booleana.
-     * @return El número de variables únicas.
-     */
-    private int contarVariablesUnicas(String ecuacion) {
-        HashSet<Character> variables = new HashSet<>();
-        for (char c : ecuacion.toCharArray()) {
-            if (Character.isLetter(c)) {
-                variables.add(Character.toUpperCase(c));
-            }
-        }
-        return variables.size();
-    }
-
-    /**
-     * Método para mostrar la tabla de verdad en el área de salida.
-     * @param tabla La tabla de verdad.
-     * @param numVariables El número de variables.
-     */
     private void mostrarTablaDeVerdad(boolean[][] tabla, int numVariables) {
-        outputArea.append("\nTabla de Verdad:\n");
+        outputArea.append("Tabla de Verdad:\n");
+        System.out.println("Mostrando encabezados de la tabla de verdad"); // Debug message
+
+        // Print headers (A, B, C, ... and OUT)
         for (int i = 0; i < numVariables; i++) {
             outputArea.append((char)('A' + i) + " ");
         }
         outputArea.append("OUT\n");
 
+        // Print rows of the truth table
         for (boolean[] fila : tabla) {
             for (int j = 0; j < numVariables; j++) {
                 outputArea.append((fila[j] ? "1" : "0") + " ");
             }
+            // Print the OUT result
             outputArea.append((fila[numVariables] ? "1" : "0") + "\n");
         }
+        System.out.println("Tabla de verdad completada"); // Debug message
     }
 
     public static void main(String[] args) {
